@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FRC 2026 REBUILT</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #0b0f1a;
+      color: white;
+      text-align: center;
+    }
+
+    #menu {
+      padding: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      background: #ff3c3c;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+
+    canvas {
+      display: none;
+      margin: auto;
+      background: #1a1f2e;
+      border: 3px solid white;
+    }
+  </style>
+</head>
+<body>
+
+<div id="menu">
+  <h1>FRC 2026 REBUILT</h1>
+  <p>Drive, shoot, and score!</p>
+  <button onclick="startGame()">Start Match</button>
+</div>
+
+<canvas id="game" width="800" height="500"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player = { x: 100, y: 250, size: 20 };
+let bullets = [];
+let score = 0;
+let time = 60;
+let running = false;
+
+let goal = { x: 700, y: 200, size: 60 };
+
+let keys = {};
+document.addEventListener("keydown", e => keys[e.key] = true);
+document.addEventListener("keyup", e => keys[e.key] = false);
+
+document.addEventListener("keydown", e => {
+  if (e.code === "Space" && running) {
+    bullets.push({ x: player.x, y: player.y, vx: 6 });
+  }
+});
+
+function startGame() {
+  document.getElementById("menu").style.display = "none";
+  canvas.style.display = "block";
+  running = true;
+
+  setInterval(() => {
+    if (time > 0) time--;
+  }, 1000);
+}
+
+function update() {
+  if (!running) return;
+
+  if (keys["w"]) player.y -= 3;
+  if (keys["s"]) player.y += 3;
+  if (keys["a"]) player.x -= 3;
+  if (keys["d"]) player.x += 3;
+
+  bullets.forEach(b => b.x += b.vx);
+
+  bullets.forEach((b, i) => {
+    if (
+      b.x > goal.x &&
+      b.y > goal.y &&
+      b.y < goal.y + goal.size
+    ) {
+      score++;
+      bullets.splice(i, 1);
+    }
+  });
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "cyan";
+  ctx.fillRect(player.x, player.y, 20, 20);
+
+  ctx.fillStyle = "yellow";
+  bullets.forEach(b => ctx.fillRect(b.x, b.y, 5, 5));
+
+  ctx.fillStyle = "red";
+  ctx.fillRect(goal.x, goal.y, goal.size, goal.size);
+
+  ctx.fillStyle = "white";
+  ctx.fillText("Score: " + score, 10, 20);
+  ctx.fillText("Time: " + time, 10, 40);
+
+  if (time <= 0) {
+    ctx.fillText("GAME OVER", 350, 250);
+    running = false;
+  }
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+
+</body>
+</html>
